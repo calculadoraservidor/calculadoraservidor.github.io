@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Descontos Legais (2026)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400,500,600,700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen py-10 px-4">
+
+    <div class="max-w-4xl mx-auto bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden">
+        
+        <!-- Cabeçalho Moderno -->
+        <div class="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-900 py-8 px-8 border-b border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-indigo-600 text-xs uppercase tracking-wider font-extrabold px-3 py-1 rounded-full text-white shadow-sm">Ano 2026</span>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-white">SIMULADOR DE SALÁRIO DO SERVIDOR</h1>
+                </div>
+                <p class="text-slate-400 text-sm mt-1">Simulador Profissional de Vencimentos, INSS, IRRF, Pensão e Descontos</p>
+            </div>
+            <div>
+                <button id="btnLimpar" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-xl transition border border-slate-700 shadow-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Limpar Tudo
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Coluna de Entradas (Inputs) -->
+            <div class="space-y-6">
+                <div class="border-b border-slate-800 pb-2">
+                    <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Passo 1</h2>
+                    <h3 class="text-lg font-bold text-white">Composição de Vencimentos</h3>
+                </div>
+
+                <!-- Salário Base -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Salário Base (R$)</label>
+                    <input type="number" id="salarioBase" value="" placeholder="0,00" step="0.01" 
+                        class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-slate-900 focus:outline-none transition font-medium text-white">
+                </div>
+
+                <!-- Triênios -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Qtd. Triênios</label>
+                        <input type="number" id="qtdTrienios" value="0" min="0" step="1" 
+                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-slate-900 focus:outline-none transition font-medium text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Valor (3% un.)</label>
+                        <input type="text" id="valTrienios" readonly 
+                            class="w-full px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl text-slate-400 font-semibold cursor-not-allowed" value="R$ 0,00">
+                    </div>
+                </div>
+
+                <!-- Insalubridade -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Adicional de Insalubridade</label>
+                    <select id="insalubridade" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-slate-900 focus:outline-none transition font-medium text-white">
+                        <option value="0" selected>Nenhuma (0%)</option>
+                        <option value="0.10">10% sobre o Base</option>
+                        <option value="0.20">20% sobre o Base</option>
+                        <option value="0.40">40% sobre o Base</option>
+                    </select>
+                </div>
+
+                <!-- Múltiplos Adicionais / Gratificações -->
+                <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-slate-300">Outros Adicionais / Gratificações</label>
+                        <button type="button" id="btnAddAdicional" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                            + Adicionar
+                        </button>
+                    </div>
+                    <div id="containerAdicionais" class="space-y-2">
+                        <!-- Inserido dinamicamente -->
+                    </div>
+                </div>
+
+                <div class="border-b border-slate-800 pb-2 pt-2">
+                    <h2 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Passo 2</h2>
+                    <h3 class="text-lg font-bold text-white">Deduções e Descontos</h3>
+                </div>
+
+                <!-- Opção de Pensão -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Pensão Alimentícia (%)</label>
+                        <select id="pensaoPercentual" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-slate-900 focus:outline-none transition font-medium text-white">
+                            <option value="0" selected>Sem Pensão (0%)</option>
+                            <option value="10">10%</option>
+                            <option value="20">20%</option>
+                            <option value="30">30%</option>
+                            <option value="custom">Outro Valor (%)</option>
+                        </select>
+                    </div>
+                    <div id="divCustomPensao" style="display:none;">
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Personalizado (%)</label>
+                        <input type="number" id="pensaoCustom" value="" placeholder="0" step="0.5" 
+                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-slate-900 focus:outline-none transition font-medium text-white">
+                    </div>
+                </div>
+
+                <!-- Múltiplos Outros Descontos -->
+                <div class="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center">
+                        <label class="text-sm font-semibold text-slate-300">Outros Descontos (Consignados, Faltas...)</label>
+                        <button type="button" id="btnAddDesconto" class="text-xs bg-rose-600 hover:bg-rose-500 text-white font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow-sm">
+                            + Adicionar
+                        </button>
+                    </div>
+                    <div id="containerDescontos" class="space-y-2">
+                        <!-- Inserido dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna de Resultados (Demonstrativo Detalhado) -->
+            <div class="bg-slate-950/70 rounded-2xl p-6 border border-slate-800 flex flex-col justify-between shadow-inner">
+                <div>
+                    <h2 class="text-base font-bold text-white border-b pb-3 border-slate-800 mb-4 flex items-center justify-between">
+                        <span>Demonstrativo Detalhado</span>
+                        <span class="text-xs font-semibold text-indigo-400 bg-indigo-950/80 border border-indigo-800 px-3 py-1 rounded-full">Oficial 2026</span>
+                    </h2>
+
+                    <div class="space-y-2 text-sm">
+                        <!-- Proventos -->
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Salário Base:</span>
+                            <span id="resBase" class="font-semibold text-slate-200">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Triênios:</span>
+                            <span id="resTrienios" class="font-semibold text-slate-200">+ R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Insalubridade:</span>
+                            <span id="resInsalubridade" class="font-semibold text-slate-200">+ R$ 0,00</span>
+                        </div>
+                        
+                        <!-- Lista dinâmica de Adicionais -->
+                        <div id="resListaAdicionais" class="space-y-1"></div>
+
+                        <div class="flex justify-between items-center py-2 border-b-2 border-slate-700 bg-indigo-950/40 px-3 rounded-xl">
+                            <span class="font-bold text-white">Salário Bruto Total:</span>
+                            <span id="resBruto" class="font-bold text-indigo-400">R$ 0,00</span>
+                        </div>
+
+                        <!-- Descontos -->
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60 pt-2">
+                            <span class="text-slate-400">Desconto INSS:</span>
+                            <span id="resInss" class="font-semibold text-rose-400">- R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Base de Cálculo IRRF:</span>
+                            <span id="resBaseIrrf" class="font-semibold text-slate-300">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Desconto IRRF:</span>
+                            <span id="resIrrf" class="font-semibold text-rose-400">- R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">Líquido após Impostos:</span>
+                            <span id="resLiquidoImpostos" class="font-semibold text-slate-200">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span id="labelPensaoDesc" class="text-slate-400">Pensão Alimentícia (0%):</span>
+                            <span id="resPensao" class="font-semibold text-rose-400">- R$ 0,00</span>
+                        </div>
+
+                        <!-- Lista dinâmica de Descontos -->
+                        <div id="resListaDescontos" class="space-y-1"></div>
+                    </div>
+                </div>
+
+                <!-- Líquido Final em Destaque -->
+                <div class="mt-6 bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-lg text-center border border-emerald-500/30">
+                    <span class="block text-xs uppercase tracking-wider text-emerald-100 font-bold">Salário Líquido Disponível</span>
+                    <span id="resLiquidoFinal" class="text-3xl font-extrabold tracking-tight mt-1 block text-white">R$ 0,00</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Rodapé Profissional com Nome do Criador -->
+        <div class="bg-slate-950 px-8 py-5 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400 gap-2">
+            <span>Holerite Fácil — Tabelas oficiais vigentes para o ano de 2026.</span>
+            <span class="font-bold text-indigo-300 bg-indigo-950/80 border border-indigo-800 px-3 py-1 rounded-full">Criado por: Alison dos Santos</span>
+        </div>
+
+    </div>
+
+    <script>
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function calcularINSS(salarioBruto) {
+            const faixas = [
+                { limite: 1518.00, aliquota: 0.075 },
+                { limite: 2793.88, aliquota: 0.09 },
+                { limite: 4190.83, aliquota: 0.12 },
+                { limite: 8157.41, aliquota: 0.14 }
+            ];
+
+            let inss = 0;
+            let anterior = 0;
+
+            for (let i = 0; i < faixas.length; i++) {
+                if (salarioBruto > faixas[i].limite) {
+                    inss += (faixas[i].limite - anterior) * faixas[i].aliquota;
+                    anterior = faixas[i].limite;
+                } else {
+                    inss += (salarioBruto - anterior) * faixas[i].aliquota;
+                    break;
+                }
+            }
+
+            const tetoInss = 951.63; 
+            return Math.min(inss, tetoInss);
+        }
+
+        function calcularIRRF(baseCalculo) {
+            if (baseCalculo <= 2259.20) return 0;
+            
+            let imposto = 0;
+            if (baseCalculo <= 2826.65) {
+                imposto = (baseCalculo * 0.075) - 169.44;
+            } else if (baseCalculo <= 3751.05) {
+                imposto = (baseCalculo * 0.15) - 381.44;
+            } else if (baseCalculo <= 4664.68) {
+                imposto = (baseCalculo * 0.225) - 662.77;
+            } else {
+                imposto = (baseCalculo * 0.275) - 896.00;
+            }
+            
+            return Math.max(0, imposto);
+        }
+
+        function adicionarLinhaAdicional(nome = '', valor = '') {
+            const container = document.getElementById('containerAdicionais');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center row-adicional';
+            div.innerHTML = `
+                <input type="text" placeholder="Nome do Adicional" value="${nome}" class="input-nome-adic w-7/12 px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <input type="number" placeholder="0,00" step="0.01" value="${valor}" class="input-val-adic w-4/12 px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <button type="button" class="btn-remover text-rose-400 hover:text-rose-300 font-bold px-2 py-1 text-sm">✕</button>
+            `;
+            div.querySelector('.btn-remover').addEventListener('click', () => { div.remove(); executarCalculo(); });
+            div.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', executarCalculo);
+            });
+            container.appendChild(div);
+        }
+
+        function adicionarLinhaDesconto(nome = '', valor = '') {
+            const container = document.getElementById('containerDescontos');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 items-center row-desconto';
+            div.innerHTML = `
+                <input type="text" placeholder="Nome do Desconto" value="${nome}" class="input-nome-desc w-7/12 px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                <input type="number" placeholder="0,00" step="0.01" value="${valor}" class="input-val-desc w-4/12 px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-rose-500 focus:outline-none">
+                <button type="button" class="btn-remover text-rose-400 hover:text-rose-300 font-bold px-2 py-1 text-sm">✕</button>
+            `;
+            div.querySelector('.btn-remover').addEventListener('click', () => { div.remove(); executarCalculo(); });
+            div.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', executarCalculo);
+            });
+            container.appendChild(div);
+        }
+
+        function executarCalculo() {
+            const salarioBase = parseFloat(document.getElementById('salarioBase').value) || 0;
+            const qtdTrienios = parseInt(document.getElementById('qtdTrienios').value) || 0;
+            const percInsalubridade = parseFloat(document.getElementById('insalubridade').value) || 0;
+
+            const valorTrienios = salarioBase * (0.03 * qtdTrienios);
+            document.getElementById('valTrienios').value = formatarMoeda(valorTrienios);
+
+            const valorInsalubridade = salarioBase * percInsalubridade;
+
+            let totalOutrosAdicionais = 0;
+            let htmlResAdicionais = '';
+            document.querySelectorAll('.row-adicional').forEach(row => {
+                const nome = row.querySelector('.input-nome-adic').value.trim() || 'Adicional';
+                const val = parseFloat(row.querySelector('.input-val-adic').value) || 0;
+                if (val > 0) {
+                    totalOutrosAdicionais += val;
+                    htmlResAdicionais += `
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">${nome}:</span>
+                            <span class="font-semibold text-slate-200">+ ${formatarMoeda(val)}</span>
+                        </div>`;
+                }
+            });
+            document.getElementById('resListaAdicionais').innerHTML = htmlResAdicionais;
+
+            const salarioBruto = salarioBase + valorTrienios + valorInsalubridade + totalOutrosAdicionais;
+
+            const descontoInss = calcularINSS(salarioBruto);
+            const baseIrrf = salarioBruto - descontoInss;
+            const descontoIrrf = calcularIRRF(baseIrrf);
+            const liquidoImpostos = salarioBruto - descontoInss - descontoIrrf;
+
+            const selectPensao = document.getElementById('pensaoPercentual').value;
+            const divCustom = document.getElementById('divCustomPensao');
+            
+            let percPensao = 0;
+            if (selectPensao === 'custom') {
+                divCustom.style.display = 'block';
+                percPensao = parseFloat(document.getElementById('pensaoCustom').value) || 0;
+            } else {
+                divCustom.style.display = 'none';
+                percPensao = parseFloat(selectPensao) || 0;
+            }
+
+            document.getElementById('labelPensaoDesc').innerText = `Pensão Alimentícia (${percPensao}%):`;
+            const valorPensao = liquidoImpostos * (percPensao / 100);
+
+            let totalOutrosDescontos = 0;
+            let htmlResDescontos = '';
+            document.querySelectorAll('.row-desconto').forEach(row => {
+                const nome = row.querySelector('.input-nome-desc').value.trim() || 'Desconto';
+                const val = parseFloat(row.querySelector('.input-val-desc').value) || 0;
+                if (val > 0) {
+                    totalOutrosDescontos += val;
+                    htmlResDescontos += `
+                        <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+                            <span class="text-slate-400">${nome}:</span>
+                            <span class="font-semibold text-rose-400">- ${formatarMoeda(val)}</span>
+                        </div>`;
+                }
+            });
+            document.getElementById('resListaDescontos').innerHTML = htmlResDescontos;
+
+            const liquidoFinal = liquidoImpostos - valorPensao - totalOutrosDescontos;
+
+            document.getElementById('resBase').innerText = formatarMoeda(salarioBase);
+            document.getElementById('resTrienios').innerText = `+ ${formatarMoeda(valorTrienios)}`;
+            document.getElementById('resInsalubridade').innerText = `+ ${formatarMoeda(valorInsalubridade)}`;
+            document.getElementById('resBruto').innerText = formatarMoeda(salarioBruto);
+            
+            document.getElementById('resInss').innerText = `- ${formatarMoeda(descontoInss)}`;
+            document.getElementById('resBaseIrrf').innerText = formatarMoeda(baseIrrf);
+            document.getElementById('resIrrf').innerText = `- ${formatarMoeda(descontoIrrf)}`;
+            document.getElementById('resLiquidoImpostos').innerText = formatarMoeda(liquidoImpostos);
+            document.getElementById('resPensao').innerText = `- ${formatarMoeda(valorPensao)}`;
+            document.getElementById('resLiquidoFinal').innerText = formatarMoeda(liquidoFinal);
+        }
+
+        document.getElementById('btnAddAdicional').addEventListener('click', () => adicionarLinhaAdicional());
+        document.getElementById('btnAddDesconto').addEventListener('click', () => adicionarLinhaDesconto());
+
+        ['salarioBase', 'qtdTrienios', 'insalubridade', 'pensaoPercentual', 'pensaoCustom'].forEach(id => {
+            document.getElementById(id).addEventListener('input', executarCalculo);
+            document.getElementById(id).addEventListener('change', executarCalculo);
+        });
+
+        document.getElementById('btnLimpar').addEventListener('click', () => {
+            document.getElementById('salarioBase').value = '';
+            document.getElementById('qtdTrienios').value = '0';
+            document.getElementById('insalubridade').value = '0';
+            document.getElementById('pensaoPercentual').value = '0';
+            document.getElementById('divCustomPensao').style.display = 'none';
+            document.getElementById('pensaoCustom').value = '';
+            document.getElementById('containerAdicionais').innerHTML = '';
+            document.getElementById('containerDescontos').innerHTML = '';
+            executarCalculo();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            executarCalculo();
+        });
+    </script>
+</body>
+</html>
